@@ -1,14 +1,17 @@
+from django.contrib.auth import login, logout
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponseNotFound
-from django.shortcuts import render, redirect
-from django.contrib.auth import logout, login
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import AddPostForm, RegisterUserForm, LoginUserForm, ContactForm
+from .forms import AddPostForm, ContactForm, LoginUserForm, RegisterUserForm
 from .models import Category, Women
 from .utils import DataMixin
 
+
+ANONYMOUS_USER_PK = 3
 menu = [{'title': "О сайте", 'url_name': 'about'},
         {'title': "Добавить статью", 'url_name': 'add_page'},
         {'title': "Обратная связь", 'url_name': 'contact'}]
@@ -81,7 +84,7 @@ def about(request):
 #     if request.method == 'POST':
 #         form = AddPostForm(request.POST, request.FILES)
 #         if form.is_valid():
-#             form.save()
+            # form.save()
 #             return redirect('home')
 #     else:
 #         form = AddPostForm()
@@ -105,6 +108,13 @@ def contact(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
+            if request.user:
+                form.save(commit=False).author_id = request.user.pk
+                form.save()
+            else:
+                print('Пользователь НЕ зареган.')
+                form.save(commit=False).author_id = ANONYMOUS_USER_PK
+                form.save()
             return redirect('contact_success')
     else:
         form = ContactForm()
