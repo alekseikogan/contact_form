@@ -1,5 +1,4 @@
 from django.contrib.auth import login, logout
-from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect, render
@@ -11,7 +10,7 @@ from .models import Category, Women
 from .utils import DataMixin
 
 
-ANONYMOUS_USER_PK = 3
+ANONYMOUS_USER_PK = 2
 menu = [{'title': "О сайте", 'url_name': 'about'},
         {'title': "Добавить статью", 'url_name': 'add_page'},
         {'title': "Обратная связь", 'url_name': 'contact'}]
@@ -31,17 +30,15 @@ menu = [{'title': "О сайте", 'url_name': 'about'},
 #         context=context
 #     )
 
-class WomenHome(ListView):
+class WomenHome(DataMixin, ListView):
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Главная страница'
-        context['menu'] = menu
-        context['cat_selected'] = 0
-        return context
+        c_def = self.get_user_context(title="Главная страница")
+        return dict(list(context.items()) + list(c_def.items()))
 
     def get_queryset(self):
         return Women.objects.filter(is_published=True).select_related('cat')
@@ -57,7 +54,7 @@ class WomenHome(ListView):
 #     }
 #     return render(request, 'women/show_post.html', context)
 
-class WomenDetail(DetailView):
+class WomenDetail(DataMixin, DetailView):
     model = Women
     template_name = 'women/show_post.html'
     slug_url_kwarg = 'post_slug'
@@ -65,11 +62,11 @@ class WomenDetail(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = context['post']
-        context['menu'] = menu
-        context['cat_selected'] = Women.objects.get(
-            slug=self.kwargs['post_slug']).cat_id
-        return context
+        cat_selected = context['post'].cat_id
+        c_def = self.get_user_context(
+            title=context['post'],
+            cat_selected=cat_selected)
+        return dict(list(context.items()) + list(c_def.items()))
 
 
 def about(request):
@@ -93,15 +90,14 @@ def about(request):
 #         'women/addpage.html',
 #         context={'title': 'Добавление статьи', 'menu': menu, 'form': form})
 
-class AddPage(CreateView):
+class AddPage(DataMixin, CreateView):
     form_class = AddPostForm
     template_name = 'women/addpage.html'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Добавление статьи'
-        context['menu'] = menu
-        return context
+        c_def = self.get_user_context(title='Добавление статьи')
+        return dict(list(context.items()) + list(c_def.items()))
 
 
 def contact(request):
@@ -147,9 +143,8 @@ class RegisterUser(DataMixin, CreateView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Регистрация'
-        context['menu'] = menu
-        return context
+        c_def = self.get_user_context(title='Регистрация')
+        return dict(list(context.items()) + list(c_def.items()))
 
 
 # def show_category(request, cat_slug):
@@ -165,7 +160,7 @@ class RegisterUser(DataMixin, CreateView):
 #     }
 #     return render(request, 'women/index.html', context=context)
 
-class WomenCategory(ListView):
+class WomenCategory(DataMixin, ListView):
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'
@@ -173,11 +168,11 @@ class WomenCategory(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Категория ' + str(context['posts'][0].cat)
-        context['cat_selected'] = Category.objects.get(
-            slug=self.kwargs['cat_slug']).pk
-        context['menu'] = menu
-        return context
+        cat_selected = context['posts'][0].cat_id
+        c_def = self.get_user_context(
+            title='Категория ' + str(context['posts'][0].cat),
+            cat_selected=cat_selected)
+        return dict(list(context.items()) + list(c_def.items()))
 
     def get_queryset(self):
         return Women.objects.filter(
