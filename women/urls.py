@@ -1,13 +1,15 @@
 from django.urls import path
 
-from .views import (
-    about, AddPage, WomenCategory, contact, WomenHome,
-    LoginUser, WomenDetail, RegisterUser, logout_user,
-    contact_success)
+from .views import (AddPage, LoginUser, RegisterUser, WomenCategory,
+                    WomenDetail, WomenHome, about, contact, contact_success,
+                    logout_user)
 
 urlpatterns = [
     path('', WomenHome.as_view(), name='home'),
-    path('category/<slug:cat_slug>/', WomenCategory.as_view(), name='category'),
+    path(
+        'category/<slug:cat_slug>/',
+        WomenCategory.as_view(),
+        name='category'),
     path('about/', about, name='about'),
     path('add_page/', AddPage.as_view(), name='add_page'),
     path('contact/', contact, name='contact'),

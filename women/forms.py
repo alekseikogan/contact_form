@@ -3,17 +3,23 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 
-from .models import Women
+from .models import Women, Review
 
 User = get_user_model()
 
 
-class ContactForm(forms.Form):
-    name = forms.CharField(max_length=100, label='Имя')
-    email = forms.EmailField(label='E-mail')
-    message = forms.CharField(
-        label='Текст обращения',
-        widget=forms.Textarea(attrs={'cols': 80, 'rows': 15}))
+# class ContactForm(forms.Form):
+#     name = forms.CharField(max_length=100, label='Имя')
+#     email = forms.EmailField(label='E-mail')
+#     message = forms.CharField(
+#         label='Текст обращения',
+#         widget=forms.Textarea(attrs={'cols': 80, 'rows': 15}))
+
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ('first_name', 'email', 'message')
 
 
 class AddPostForm(forms.ModelForm):
