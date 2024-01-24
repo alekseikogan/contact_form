@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
 
 from .forms import AddPostForm, ContactForm, LoginUserForm, RegisterUserForm
-from .models import Category, Women
+from .models import Women
 from .utils import DataMixin
 
 
@@ -69,14 +69,6 @@ class WomenDetail(DataMixin, DetailView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-def about(request):
-    return render(
-        request,
-        'women/about.html',
-        context={'title': 'О сайте', 'menu': menu}
-        )
-
-
 # def addpage(request):
 #     if request.method == 'POST':
 #         form = AddPostForm(request.POST, request.FILES)
@@ -108,7 +100,6 @@ def contact(request):
                 form.save(commit=False).author_id = request.user.pk
                 form.save()
             else:
-                print('Пользователь НЕ зареган.')
                 form.save(commit=False).author_id = ANONYMOUS_USER_PK
                 form.save()
             return redirect('contact_success')
@@ -131,25 +122,9 @@ def contact_success(request):
     return render(request, 'women/contact_success.html', context=context)
 
 
-class RegisterUser(DataMixin, CreateView):
-    form_class = RegisterUserForm
-    template_name = 'women/register.html'
-    success_url = reverse_lazy('login')
-
-    def form_valid(self, form):
-        user = form.save()
-        login(self.request, user)
-        return redirect('home')
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Регистрация')
-        return dict(list(context.items()) + list(c_def.items()))
-
-
 # def show_category(request, cat_slug):
 #     posts = Women.objects.filter(cat__slug=cat_slug)
-#     if len(posts) == 0: 
+#     if len(posts) == 0:
 #         raise Http404()
 
 #     context = {
@@ -159,6 +134,7 @@ class RegisterUser(DataMixin, CreateView):
 #         'cat_selected': posts[0].cat_id,
 #     }
 #     return render(request, 'women/index.html', context=context)
+
 
 class WomenCategory(DataMixin, ListView):
     model = Women
@@ -180,8 +156,20 @@ class WomenCategory(DataMixin, ListView):
             is_published=True).select_related('cat')
 
 
-def pageNotFound(request, exception):
-    return HttpResponseNotFound('<h1>Страница не найдена</h1>')
+class RegisterUser(DataMixin, CreateView):
+    form_class = RegisterUserForm
+    template_name = 'women/register.html'
+    success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('home')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Регистрация')
+        return dict(list(context.items()) + list(c_def.items()))
 
 
 class LoginUser(DataMixin, LoginView):
@@ -193,10 +181,22 @@ class LoginUser(DataMixin, LoginView):
         c_def = self.get_user_context(title='Авторизация')
         return dict(list(context.items()) + list(c_def.items()))
 
-    def get_success_url(self) -> str:
+    def get_success_url(self):
         return reverse_lazy('home')
 
 
 def logout_user(request):
     logout(request)
     return redirect('home')
+
+
+def about(request):
+    return render(
+        request,
+        'women/about.html',
+        context={'title': 'О сайте', 'menu': menu}
+        )
+
+
+def pageNotFound(request, exception):
+    return HttpResponseNotFound('<h1>Страница не найдена</h1>')

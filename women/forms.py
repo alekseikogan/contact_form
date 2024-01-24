@@ -1,25 +1,21 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import ValidationError
+from friendly_captcha.fields import FrcCaptchaField
 
-from .models import Women, Review
+from .models import Review, Women
 
 User = get_user_model()
 
 
-# class ContactForm(forms.Form):
-#     name = forms.CharField(max_length=100, label='Имя')
-#     email = forms.EmailField(label='E-mail')
-#     message = forms.CharField(
-#         label='Текст обращения',
-#         widget=forms.Textarea(attrs={'cols': 80, 'rows': 15}))
-
-
 class ContactForm(forms.ModelForm):
+
     class Meta:
         model = Review
-        fields = ('first_name', 'email', 'message')
+        fields = ('first_name', 'email', 'message',)
+
+    captcha = FrcCaptchaField(label='Проверка')
 
 
 class AddPostForm(forms.ModelForm):
@@ -66,7 +62,3 @@ class LoginUserForm(AuthenticationForm):
     password = forms.CharField(
         label='Пароль', widget=forms.PasswordInput(
             attrs={'class': 'form-input'}))
-
-    class Meta:
-        model = User
-        fields = ('username', 'password', 'password2')

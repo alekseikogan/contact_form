@@ -9,6 +9,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,7 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'debug_toolbar',
-    'women.apps.WomenConfig'
+    'friendly_captcha',
+    'women.apps.WomenConfig',
 ]
 
 MIDDLEWARE = [
@@ -59,6 +63,12 @@ DATABASES = {
         'NAME': str(os.path.join(BASE_DIR, 'db.sqlite3')),
     }
 }
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'coolsite_cache'),
+    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -77,9 +87,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/3.1/topics/i18n/
-
 LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
@@ -91,16 +98,9 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = []
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-
-INTERNAL_IPS = [
-    '127.0.0.1',
-]
